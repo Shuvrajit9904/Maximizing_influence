@@ -1,0 +1,95 @@
+\documentclass[letterpaper,onecolumn,10pt]{article}
+\usepackage{epsfig,xspace,url}
+\usepackage{authblk}
+\usepackage{hyperref}
+\usepackage{enumitem}
+
+\title{CS 6150: Advanced Algorithms Project Update 1\\
+Maximizing the influence of a social network\\}
+\author{Aakanksha Saha and Shuvrajit Mukherjee}
+\affil{School of Computing, University of Utah}
+
+\begin{document}
+
+\maketitle
+\textbf{\textit{Task Implemented 1:}}
+\begin{itemize}
+\item Estimated the spread of influence using the Greedy approach mentioned in the paper.\\
+\textbf{\textit{Decision Choices:}}
+\begin{itemize}
+\item We have implemented the Independent Cascade model to calculate the spread.
+\item We have used the following two data set to verify our result:\\
+1. \href{https://snap.stanford.edu/data/soc-Slashdot0902.html}{Slashdot Social Network(82168 Nodes, 948464 Edges, Directed)}\\
+2. \href{https://snap.stanford.edu/data/egonets-Facebook.html}{Social Circle: Facebook(4039 Nodes, 88234 Edges, Undirected)}
+\item Random seed set to 57
+\item Any node once influenced by a node once is not double counted in later steps.
+\item The problem being NP-Hard, we were not able to compare it with the optimal solution, So we have compared our results with randomly selected $k$ nodes
+\end{itemize}
+\textbf{\textit{Experiment Results:}}
+\begin{itemize}
+\item Slashdot Data set\\
+- k = 10\\
+- Spread using greedy approach: 6567 nodes \\
+- Spread while k nodes are selected randomly: 90\\
+\item Social Circle: Facebook\\
+- k = 4\\
+- Spread using greedy approach: 2198 nodes \\
+- Spread while k nodes are selected randomly: 341\\
+\end{itemize}
+\end{itemize}
+
+\textbf{\textit{Task Implemented 2:}}
+\begin{itemize}
+\item Estimated the spread of influence using the Highest degree heuristic.\\
+\textbf{\textit{Decision Choices:}}
+\begin{itemize}
+\item We have implemented the Independent Cascade model and the Weighted Cascade model to calculate the spread.
+\item We have used the following dataset to verify our result:\\
+1. \href{https://snap.stanford.edu/data/soc-Slashdot0902.html}{Slashdot Social Network(82168 Nodes, 948464 Edges, Directed)}
+\item Used networkx module in python to read the graphs and traverse it, used  generators to get a space efficient method for large data processing.
+\end{itemize}
+\textbf{\textit{Experiment Results:}}
+\begin{itemize}
+\item Slashdot Data set\\
+-Seed value of  k = 10\\
+- Independent cascade model was able to influence $\approx$ 24k nodes. Running Time $\approx 5 seconds$ \\
+- The weighted cascade model on the other hand could only influence 300 nodes.\\
+\end{itemize}
+
+\end{itemize}
+
+\textbf{\textit{Proposed Heuristics and Future work}}
+\begin{itemize}
+\item As an extension to highest degree heuristic we would like to implement the degree discount heuristic: \url{https://www.microsoft.com/en-us/research/wp-content/uploads/2016/06/kdd09_influence-1.pdf}. 
+The general idea is as follows; let v be a neighbor of vertex u.
+If u has been selected as a seed, then when selecting v as a new seed based on its degree, we should not count the edge vu towards its degree. Thus, we should discount v's degree by one due
+to the presence of u in the seed set, and we do the same discount on v’s degree for every neighbor of v that is already in the seed set.
+
+\item  Also, one of the rough heuristics could be to cover the graph breadth wise and greedily involve the node which is farthest from the given visited node. Thus, we can try to maximize the total distance in the chosen set of seed values or k nodes, thereby covering the graph holistically. 
+
+\item The following proposed heuristic is based on the following assumption:\\
+\indent If the graph is sufficiently large the most influential nodes are uniformly distributed across the graph. \\
+\indent We compute the sphere of a influential node. So, we start with a void set and append the first node with highest influence independently. The next highest influential node will not lie in the sphere of the previous node and after appending this node we will have two spheres, which may have some overlap. We go on like this to add a total of k nodes.
+\end{itemize}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\end{document}
+
+ 
