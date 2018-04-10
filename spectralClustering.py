@@ -79,26 +79,32 @@ for key in adjlist:
 
 
 #Independent Cascade Model
-def cascade(vert, rand, activeState):
+def cascade(vert, rand, activeState, ct):
+    
     active = []
     count = 0
-    ct = 0        
+    #ct = 0        
     if len(g.neighbours(vert)) != 0:
-        for vertices in g.neighbours(vert):                    
-            rand1 = random.random()
-            if rand1 > rand:            
-                ct += 1
-                active.append(vertices)
-                #print(vertices)
-                activeState[vertices] = True
+        #print("here")
+        for vertices in g.neighbours(vert):
+            if activeState[vertices] != True:  
+                #print("Inside ActiveState")
+                rand1 = random.random()
+                if rand1 > rand:            
+                    ct += 1
+                    active.append(vertices)
+                    #print(vertices)
+                    activeState[vertices] = True
                 #print active
     if len(active) == 0:
         return 1
     else:
         for vertices in active:
             rand2 = random.random()
-            if activeState[vertices] == False:
-                count += cascade(vertices, rand2, activeState)
+            #count += cascade(vertices, rand2, activeState, ct)
+            cascade(vertices, rand2, activeState, ct)
+    
+    #print("here")
     return ct
 
 #Independent Cascade Model(Handles influence of multiple vertices)
@@ -108,13 +114,14 @@ def cascadeGroup(vertList, rand, activeState):
     ct = 0
     for vert in vertList:
         if len(g.neighbours(vert)) != 0:
-            for vertices in g.neighbours(vert):        
-                rand1 = random.random()
-                if rand1 > rand:            
-                    ct += 1
-                    active.append(vertices)
-                    #print(vertices)
-                    activeState[vertices] = True
+            for vertices in g.neighbours(vert):
+                if activeState[vertices] != True:
+                    rand1 = random.random()
+                    if rand1 > rand:            
+                        ct += 1
+                        active.append(vertices)
+                        #print(vertices)
+                        activeState[vertices] = True
                     
             #print active
     if len(active) == 0:
@@ -122,8 +129,8 @@ def cascadeGroup(vertList, rand, activeState):
     else:
         for vertices in active:
             rand2 = random.random()
-            if activeState[vertices] == False:
-                count += cascade([vertices], rand2, activeState)
+            #if activeState[vertices] == False:
+            cascade(vertices, rand2, activeState,0)
     return activeState
 
 def calMostInf(g, clust):
@@ -144,18 +151,57 @@ active = [False for i in range(g.length())]
 print("Calculating Spread of Influence on ego-Facebook Data")
 print("The budget for this example is 5(The report Captures spread for varying budget)")
 
+
+
+mostInf = []
+for ep in range(500):
+    mx = 0
+    for vert in g.adjacencylist():        
+        if vert not in mostInf:
+            neighbour = g.neighbours(vert)
+            rand = random.random()
+            activeCount = cascade(vert, rand, active, 0)
+            if activeCount > mx:
+                mx = activeCount
+                influence = vert
+    mostInf.append(influence)
+#print("The set of 5 most influencial nodes are:")    
+#print(*mostInf, sep = ' ')
+                
+
+#Set the most influencial nodes as Active
+activeInit = [False for i in range(g.length())]
+for val in mostInf:
+    activeInit[val] = True
+
+#print(mostInf)
+#Calculate the influence of most influencial nodes
+#print("check1:", len(mostInf))
+influenced = cascadeGroup(mostInf,rand,activeInit)
+spread = 0
+for state in influenced:
+    if state == True:
+        spread += 1
+greedy_spread.append(spread)
+#print("The spread (Counted active nodes) for these selected nodes is:",spread)
+
+
+
+
+'''
+
 #k is an integer, representing the budget
 #k = int(input("What's your Budget(k) for Facebook Data?:"))
 greedy_all = []
 clustered_all = []
 
-for epoch in range(25):
+for epoch in range(1):
     
     print("Sucking at Iteration:", epoch)
     greedy_spread = []
     clustered_spread = []
     
-    for k in range(2,50):
+    for k in [2,5,10,20,30,40,50]:
         #k = 60
         #Finding out the most influencial nodes
         #print(k)
@@ -225,14 +271,14 @@ clustered_all = np.asarray(clustered_all)
 greedy_smoothed = []
 clustered_smoothed = []
 
-for i in range(48):
+for i in [2,5,10,20,30,40,50]:
     greedy_smoothed.append(np.mean(greedy_all[:,i]))
     clustered_smoothed.append(np.mean(clustered_all[:,i]))
 
     
-cost = [i for i in range(2, 50)]
-plt.plot(cost[:20], greedy_smoothed[:20])
-plt.plot(cost[:20], clustered_smoothed[:20] )
+cost = [i for i in [2,5,10,20,30,40,50]]
+plt.plot(cost, greedy_all[0])
+plt.plot(cost, clustered_all[0] )
 plt.title("Lower Cost Comparision")
 plt.xlabel('Cost')
 plt.ylabel('Spread')
@@ -250,6 +296,7 @@ plt.show()
 plt.plot(cost, greedy_smoothed)
 plt.plot(cost, clustered_smoothed)
 plt.title("Complete Range Comparision")
+
 plt.xlabel('Cost')
 plt.ylabel('Spread')
 plt.legend(['Greedy', 'Clustering'])
